@@ -29,6 +29,44 @@ async function run() {
     await client.connect();
 
     const coffeeCollection = client.db("CoffeeStoreDB").collection("coffees");
+    const userCollection = client.db("CoffeeStoreDB").collection("users");
+
+    // Authentication related APi in bellow
+    app.post('/users', async(req, res)=>{
+      const user = req.body;
+      const result = await userCollection.insertOne(user);
+      res.send(result)
+    })
+
+    app.get('/users', async(req, res)=>{
+      const cursor = userCollection.find();
+      const result = await cursor.toArray();
+      res.send(result)
+    })
+
+    app.patch('/users', async(req, res)=>{
+      const user = req.body;
+      const query = {email : user.email};
+      const updateDoc ={
+        $set:{
+          lastLogAt: user.lastLogAt
+        }
+      }
+      const result = await userCollection.updateOne(query, updateDoc);
+      res.send(result);
+
+    })
+    app.delete('/users/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+
+    })
+
+
+
+    // Coffee Related API
 
     app.get("/coffee", async (req, res) => {
       const cursor = coffeeCollection.find();
